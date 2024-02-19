@@ -8,6 +8,7 @@ import apiConfig from './config/api.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       load: [apiConfig],
     }),
   ],

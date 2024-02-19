@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -18,11 +19,16 @@ export class AppService {
       searchParams.append('lat', location.lat.toString());
       searchParams.append('lon', location.lon.toString());
 
-      const data = await fetch(
-        this.configService.get('apiUrl') + searchParams.toString(),
-      );
-      const json = await data.json();
-      console.log('🚀 ~ AppService ~ json:', json);
+      const uri = this.configService.get('apiUrl');
+      console.log('🚀 ~ AppService ~ uri:', uri);
+
+      const data = await fetch(uri + searchParams.toString());
+      const json = (await data.json()) as { cod: number };
+      if (json.cod === 200) {
+        return json;
+      } else {
+        return new BadRequestException('Could not fetch weather data');
+      }
     } catch (error) {
       return new InternalServerErrorException('Error fetching weather data');
     }
