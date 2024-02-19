@@ -18,12 +18,15 @@ export class AppService {
       const searchParams = new URLSearchParams();
       searchParams.append('lat', location.lat.toString());
       searchParams.append('lon', location.lon.toString());
+      searchParams.append('appid', this.configService.get('apiKey'));
 
       const uri = this.configService.get('apiUrl');
-      console.log('🚀 ~ AppService ~ uri:', uri);
+      const fullUrl = uri + '?' + searchParams.toString();
+      console.log('🚀 ~ AppService ~ uri:', fullUrl);
 
-      const data = await fetch(uri + searchParams.toString());
+      const data = await fetch(fullUrl);
       const json = (await data.json()) as { cod: number };
+      console.log('🚀 ~ AppService ~ json:', json);
       if (json.cod === 200) {
         return json;
       } else {

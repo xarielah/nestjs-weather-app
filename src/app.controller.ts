@@ -1,29 +1,26 @@
-import { Controller, Get, Head, Headers, Ip } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { AppService } from './app.service';
-import { GeoService } from './geo/geo.service';
-
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly geoService: GeoService,
-  ) {}
+  constructor(private readonly appService: AppService) {}
 
-  @Get()
+  @Get('/weather')
   async getWeather(
-    @Ip() ip: string,
-    @Headers('x-real-ip') realIp: any,
-    @Headers('x-forwarded-for') forwardedFor: any,
-    @Headers() headers: any,
+    @Query('lon') lon: string | number,
+    @Query('lat') lat: string | number,
   ): Promise<any> {
-    console.log('🚀 ~ AppController ~ headers:', headers);
-    console.log('🚀 ~ AppController ~ forwardedFor:', forwardedFor);
-    console.log('🚀 ~ AppController ~ getWeather ~ headers:', realIp);
-    console.log('User IP: ' + ip);
-    const geolocation = await this.geoService.getGeolocation(
-      realIp || '87.68.141.5',
-    );
-    console.log('Geolocation: ' + JSON.stringify(geolocation));
-    return await this.appService.getWeather(geolocation);
+    if (!lon || !lat)
+      return new BadRequestException("Missing 'lon' or 'lat' query parameter");
+
+    if (isNaN(Number(lon)) || isNaN(Number(lat)))
+      return new BadRequestException("Invalid 'lon' or 'lat' query parameter");
+
+    return await this.appService.getWeather({ lon, lat });
   }
 }
